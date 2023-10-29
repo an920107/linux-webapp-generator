@@ -1,5 +1,6 @@
 import os
 from threading import Thread
+from pathlib import Path
 
 
 HOME = os.environ.get("HOME")
@@ -21,12 +22,21 @@ class Configuration:
             return CHROME_EXEC_PATH
         else:
             return EDGE_EXEC_PATH
+        
+    @property
+    def icon_filename(self):
+        return Path(self.icon_path).name
+
+    @property
+    def icon_suffix(self):
+        return Path(self.icon_path).suffix
+    
 
 
 def build_job(config: Configuration) -> None:
     config_path = f"{HOME}/.config/webapp-{config.app_name.lower()}"
     os.system(f"mkdir -p {config_path}")
-    os.system(f"cp {config.icon_path} {config_path}/icon.png")
+    os.system(f"cp {config.icon_path} {config_path}/icon{config.icon_suffix}")
     with open(f"{HOME}/.local/share/applications/{config.app_name.lower()}.desktop", "w") as desktop_conf:
         desktop_conf.write("[Desktop Entry]\n")
         desktop_conf.write("Version=1.0\n")
@@ -35,7 +45,7 @@ def build_job(config: Configuration) -> None:
         desktop_conf.write(f"Name={config.app_name}\n")
         desktop_conf.write(
             f"Exec={config.exec_path} --user-data-dir={config_path} --class={config.app_name.lower()} --app='{config.app_url}' --window-size=1280,720 --window-position=320,180\n")
-        desktop_conf.write(f"Icon={config_path}/icon.png\n")
+        desktop_conf.write(f"Icon={config_path}/icon{config.icon_suffix}\n")
         desktop_conf.write(f"StartupWMClass={config.app_name.lower()}\n")
 
 
